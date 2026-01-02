@@ -1,0 +1,32 @@
+---
+description: Supabase security, RLS, and data fetching best practices.
+globs: ["lib/**/*", "**/*.ts", "**/*.tsx"]
+alwaysApply: false
+---
+
+# Supabase & Security Rules
+
+## Security (High Priority)
+- **Row Level Security (RLS):** NEVER disable RLS on Supabase tables. Assume RLS is active.
+- **Client-Side Filtering:** Even with RLS, filter data by `user_id` in your queries for performance.
+  ```typescript
+  // GOOD
+  .from('todos').select('*').eq('user_id', session.user.id)
+  ```
+- **Environment Variables:**
+  - Use `EXPO_PUBLIC_` prefix for client-side keys (e.g., `EXPO_PUBLIC_SUPABASE_URL`).
+  - NEVER commit service roles or secret keys to the repo.
+
+## Auth Persistence
+- Ensure Supabase client is configured with `AsyncStorage` for React Native.
+  ```typescript
+  auth: {
+    storage: AsyncStorage,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false,
+  }
+  ```
+
+## Input Validation
+- Validate all inputs before sending to Supabase (recommend using Zod if available, or strict TS checks).

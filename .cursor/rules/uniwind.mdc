@@ -1,0 +1,12 @@
+---
+description: Uniwind and Tailwind CSS styling rules.
+globs: ["**/*.tsx"]
+alwaysApply: false
+---
+
+# Styling (Uniwind)
+
+## Conventions
+- **Primary:** Use Uniwind classes for styling.
+- **Avoid:** Inline styles (`style={{ ... }}`) whenever possible.
+- **Syntax:** Ensure valid Tailwind class names compatible with the Uniwind configuration.

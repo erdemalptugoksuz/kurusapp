@@ -1,0 +1,79 @@
+# Project Context
+You are an expert React Native developer specializing in Expo (v54+), Expo Router (v6), TypeScript, and Supabase. You are working on a project that uses "Uniwind" (Tailwind CSS for React Native) for styling.
+
+# Tech Stack
+- **Framework:** React Native (0.81+) with Expo SDK 54
+- **Routing:** Expo Router v6 (File-based routing in `app/` directory)
+- **Styling:** Uniwind (Tailwind CSS classes)
+- **Backend/Auth:** Supabase (v2)
+- **Language:** TypeScript
+
+# User Rules & Language Conventions
+- **Language Separation:**
+  - **UI/Content:** ALL visible application text, alerts, buttons, and labels MUST be in **Turkish**.
+  - **Codebase:** ALL variable names, function names, comments, commit messages, and documentation MUST be in **English**.
+- **Code Quality:**
+  - Adhere to strict clean code principles.
+  - No spaghetti code; prioritize modularity.
+  - Use PascalCase for components, camelCase for variables/functions.
+
+# Directory Structure & File Organization
+- **Do not** put logic inside `app/` screens unless it's routing specific.
+- **Components:** Create reusable UI components in `components/`.
+- **Types/Interfaces:**
+  - Define all types in `types/` folder.
+  - Define all interfaces in `interfaces/` folder (or combined `types/` if preferred, but keep them separate from component logic).
+- **Services:** Supabase and API logic goes into `lib/` or `services/`.
+- **Example Structure:**
+  ```
+  /app          (Routes only)
+  /components   (Reusable UI)
+  /types        (Global types)
+  /interfaces   (Global interfaces)
+  /lib          (Supabase client, helpers)
+  /assets       (Images, fonts)
+  ```
+
+# Coding Standards
+
+## React Native & Expo
+- Use **Functional Components** with Hooks. Avoid Class components.
+- Use `Expo Image` for high-performance image rendering.
+- Use `SafeAreaView` from `react-native-safe-area-context` where appropriate.
+- Prefer **Early Returns** to reduce nesting depth.
+
+## Styling (Uniwind)
+- **Primary:** Use Uniwind classes for styling.
+- **Avoid:** Inline styles (`style={{ ... }}`) whenever possible.
+- **Syntax:** Ensure valid Tailwind class names compatible with the Uniwind configuration.
+
+## Supabase & Security (High Priority)
+- **Row Level Security (RLS):** NEVER disable RLS on Supabase tables. Assume RLS is active.
+- **Client-Side Filtering:** Even with RLS, filter data by `user_id` in your queries for performance.
+  ```typescript
+  // GOOD
+  .from('todos').select('*').eq('user_id', session.user.id)
+  ```
+- **Environment Variables:**
+  - Use `EXPO_PUBLIC_` prefix for client-side keys (e.g., `EXPO_PUBLIC_SUPABASE_URL`).
+  - NEVER commit service roles or secret keys to the repo.
+- **Auth Persistence:** Ensure Supabase client is configured with `AsyncStorage` for React Native.
+  ```typescript
+  auth: {
+    storage: AsyncStorage,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false,
+  }
+  ```
+- **Input Validation:** Validate all inputs before sending to Supabase (recommend using Zod if available, or strict TS checks).
+
+## TypeScript
+- **No `any`:** Avoid using `any` type. Define explicit interfaces.
+- **Strict Mode:** Adhere to strict typing rules.
+- **Props:** Define Props interfaces for all components.
+
+# Development Workflow
+- **Linting:** Check for linter errors after major changes.
+- **Refactoring:** When modifying a file, leave it cleaner than you found it.
+
