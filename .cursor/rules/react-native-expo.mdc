@@ -1,0 +1,22 @@
+---
+description: React Native and Expo best practices and routing rules.
+globs: ["**/*.tsx", "**/*.ts", "app/**/*"]
+alwaysApply: false
+---
+
+# React Native & Expo Coding Standards
+
+## Components & Hooks
+- Use **Functional Components** with Hooks. Avoid Class components.
+- Use `Expo Image` for high-performance image rendering.
+- Use `SafeAreaView` from `react-native-safe-area-context` where appropriate.
+- Prefer **Early Returns** to reduce nesting depth.
+
+## Expo Router v6
+- **Routing:** Use file-based routing in the `app/` directory.
+- **Logic:** Keep routing logic in `app/`, but move business logic and complex UI to `components/` or hooks.
+
+## TypeScript
+- **No `any`:** Avoid using `any` type. Define explicit interfaces.
+- **Strict Mode:** Adhere to strict typing rules.
+- **Props:** Define Props interfaces for all components.
