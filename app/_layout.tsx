@@ -1,12 +1,12 @@
-import { useEffect } from "react";
-import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import * as SplashScreen from "expo-splash-screen";
 import * as Linking from "expo-linking";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
-import { handleAuthDeepLink, isAuthDeepLink } from "../lib/deepLinking";
 import "../global.css";
+import { handleAuthDeepLink, isAuthDeepLink } from "../lib/deepLinking";
 
 // Keep splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -15,14 +15,12 @@ function RootNavigator() {
   const { isAuthenticated, isLoading, isRecoveryMode } = useAuth();
   const url = Linking.useURL();
 
+  // Hide splash screen when auth state is loaded
   useEffect(() => {
-    // Hide splash screen after a short delay
-    const timer = setTimeout(() => {
+    if (!isLoading) {
       SplashScreen.hideAsync();
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
+    }
+  }, [isLoading]);
 
   // Process incoming deep links
   useEffect(() => {
@@ -50,7 +48,15 @@ function RootNavigator() {
       >
         <Stack.Screen name="index" options={{ animation: "fade" }} />
 
-        {/* Protected routes - only accessible when NOT authenticated */}
+        {/* 
+          Protected routes using Stack.Protected (Expo Router v6+)
+          This feature provides declarative route guards based on conditions.
+          
+          - Auth routes: accessible when NOT authenticated OR in recovery mode
+          - Tab routes: accessible when authenticated AND NOT in recovery mode
+          
+          @see https://docs.expo.dev/router/advanced/protected-routes/
+        */}
         <Stack.Protected guard={!isAuthenticated || isRecoveryMode}>
           <Stack.Screen
             name="(auth)"
@@ -61,7 +67,6 @@ function RootNavigator() {
           />
         </Stack.Protected>
 
-        {/* Protected routes - only accessible when authenticated */}
         <Stack.Protected guard={isAuthenticated && !isRecoveryMode}>
           <Stack.Screen
             name="(tabs)"

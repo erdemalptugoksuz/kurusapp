@@ -1,16 +1,15 @@
-import { useState, useEffect } from "react";
-import { Alert, KeyboardAvoidingView, Platform } from "react-native";
-import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  StyledSafeAreaView,
-  StyledView,
-  StyledText,
-} from "../../components/ui/StyledComponents";
-import { useAuth } from "../../contexts/AuthContext";
+import { router } from "expo-router";
+import { useState } from "react";
+import { Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
-import { supabase } from "../../lib/supabase";
+import {
+  StyledSafeAreaView,
+  StyledText,
+  StyledView,
+} from "../../components/ui/StyledComponents";
+import { useAuth } from "../../contexts/AuthContext";
 import { useResetPasswordValidation } from "../../hooks/useAuthValidation";
 
 export default function ResetPasswordScreen() {
@@ -21,20 +20,8 @@ export default function ResetPasswordScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  useEffect(() => {
-    // Listen for PASSWORD_RECOVERY event
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, _session) => {
-        if (event === "PASSWORD_RECOVERY") {
-          // User clicked on the recovery link
-        }
-      }
-    );
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, []);
+  // Note: PASSWORD_RECOVERY event is handled by AuthContext
+  // No need for a separate listener here
 
   const handleUpdatePassword = async () => {
     if (!validate(password, confirmPassword)) return;
@@ -44,10 +31,7 @@ export default function ResetPasswordScreen() {
     setIsLoading(false);
 
     if (error) {
-      Alert.alert(
-        "Hata",
-        "Şifre güncellenemedi. Lütfen tekrar deneyin."
-      );
+      Alert.alert("Hata", "Şifre güncellenemedi. Lütfen tekrar deneyin.");
     } else {
       setIsSuccess(true);
     }
@@ -64,7 +48,8 @@ export default function ResetPasswordScreen() {
             Şifre Güncellendi
           </StyledText>
           <StyledText className="text-lg text-zinc-500 text-center mb-8 leading-7">
-            Şifren başarıyla güncellendi.{"\n"}Artık yeni şifrenle giriş yapabilirsin.
+            Şifren başarıyla güncellendi.{"\n"}Artık yeni şifrenle giriş
+            yapabilirsin.
           </StyledText>
           <Button
             title="Uygulamaya Git"
@@ -102,7 +87,7 @@ export default function ResetPasswordScreen() {
           <StyledView>
             <Input
               label="Yeni Şifre"
-              placeholder="En az 6 karakter"
+              placeholder="En az 8 karakter"
               isPassword
               autoCapitalize="none"
               autoComplete="new-password"

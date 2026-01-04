@@ -18,12 +18,43 @@ export interface ResetPasswordErrors {
   confirmPassword?: string;
 }
 
-// Email validation regex
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Email validation regex - RFC 5322 compliant pattern
+// Validates: local-part@domain with proper structure
+const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
 
-// Minimum password length
-const MIN_PASSWORD_LENGTH = 6;
+// Minimum password length - 8 characters per modern security standards (NIST SP 800-63B)
+const MIN_PASSWORD_LENGTH = 8;
 const MIN_NAME_LENGTH = 2;
+
+/**
+ * Validates password against minimum requirements
+ * @param password - The password to validate
+ * @returns Error message if invalid, undefined if valid
+ */
+const validatePassword = (password: string): string | undefined => {
+  if (!password) {
+    return "Şifre gerekli";
+  }
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    return `Şifre en az ${MIN_PASSWORD_LENGTH} karakter olmalı`;
+  }
+  return undefined;
+};
+
+/**
+ * Validates email address format
+ * @param email - The email to validate
+ * @returns Error message if invalid, undefined if valid
+ */
+const validateEmail = (email: string): string | undefined => {
+  if (!email.trim()) {
+    return "E-posta adresi gerekli";
+  }
+  if (!EMAIL_REGEX.test(email)) {
+    return "Geçerli bir e-posta adresi girin";
+  }
+  return undefined;
+};
 
 /**
  * Hook for sign-in form validation
@@ -34,16 +65,14 @@ export function useSignInValidation() {
   const validate = useCallback((email: string, password: string): boolean => {
     const newErrors: SignInErrors = {};
 
-    if (!email.trim()) {
-      newErrors.email = "E-posta adresi gerekli";
-    } else if (!EMAIL_REGEX.test(email)) {
-      newErrors.email = "Geçerli bir e-posta adresi girin";
+    const emailError = validateEmail(email);
+    if (emailError) {
+      newErrors.email = emailError;
     }
 
-    if (!password) {
-      newErrors.password = "Şifre gerekli";
-    } else if (password.length < MIN_PASSWORD_LENGTH) {
-      newErrors.password = `Şifre en az ${MIN_PASSWORD_LENGTH} karakter olmalı`;
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      newErrors.password = passwordError;
     }
 
     setErrors(newErrors);
@@ -78,16 +107,14 @@ export function useSignUpValidation() {
         newErrors.fullName = `Ad soyad en az ${MIN_NAME_LENGTH} karakter olmalı`;
       }
 
-      if (!email.trim()) {
-        newErrors.email = "E-posta adresi gerekli";
-      } else if (!EMAIL_REGEX.test(email)) {
-        newErrors.email = "Geçerli bir e-posta adresi girin";
+      const emailError = validateEmail(email);
+      if (emailError) {
+        newErrors.email = emailError;
       }
 
-      if (!password) {
-        newErrors.password = "Şifre gerekli";
-      } else if (password.length < MIN_PASSWORD_LENGTH) {
-        newErrors.password = `Şifre en az ${MIN_PASSWORD_LENGTH} karakter olmalı`;
+      const passwordError = validatePassword(password);
+      if (passwordError) {
+        newErrors.password = passwordError;
       }
 
       if (!acceptedTerms) {
@@ -114,12 +141,9 @@ export function useEmailValidation() {
   const [error, setError] = useState<string>("");
 
   const validate = useCallback((email: string): boolean => {
-    if (!email.trim()) {
-      setError("E-posta adresi gerekli");
-      return false;
-    }
-    if (!EMAIL_REGEX.test(email)) {
-      setError("Geçerli bir e-posta adresi girin");
+    const emailError = validateEmail(email);
+    if (emailError) {
+      setError(emailError);
       return false;
     }
     setError("");
@@ -143,10 +167,9 @@ export function useResetPasswordValidation() {
     (password: string, confirmPassword: string): boolean => {
       const newErrors: ResetPasswordErrors = {};
 
-      if (!password) {
-        newErrors.password = "Yeni şifre gerekli";
-      } else if (password.length < MIN_PASSWORD_LENGTH) {
-        newErrors.password = `Şifre en az ${MIN_PASSWORD_LENGTH} karakter olmalı`;
+      const passwordError = validatePassword(password);
+      if (passwordError) {
+        newErrors.password = passwordError;
       }
 
       if (!confirmPassword) {
@@ -167,4 +190,3 @@ export function useResetPasswordValidation() {
 
   return { errors, validate, clearErrors };
 }
-

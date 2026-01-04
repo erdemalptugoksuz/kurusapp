@@ -3,9 +3,7 @@ import * as QueryParams from "expo-auth-session/build/QueryParams";
 import Constants from "expo-constants";
 import { router } from "expo-router";
 import { supabase } from "./supabase";
-
-// Key for persisting recovery mode state (must match AuthContext)
-const RECOVERY_MODE_KEY = "kurusapp_recovery_mode";
+import { RECOVERY_MODE_KEY } from "./constants";
 
 /**
  * Deep link URL types for authentication
@@ -18,6 +16,24 @@ type AuthDeepLinkType =
 
 // Check if running in Expo Go
 const isExpoGo = Constants.appOwnership === "expo";
+
+/**
+ * Sets recovery mode flag in AsyncStorage
+ * Used to persist recovery state across app restarts
+ */
+export const setRecoveryMode = async (): Promise<void> => {
+  await AsyncStorage.setItem(RECOVERY_MODE_KEY, "true");
+  if (__DEV__) console.log("[DeepLink] Recovery mode flag set");
+};
+
+/**
+ * Clears recovery mode flag from AsyncStorage
+ * Called after password update or on error
+ */
+export const clearRecoveryMode = async (): Promise<void> => {
+  await AsyncStorage.removeItem(RECOVERY_MODE_KEY);
+  if (__DEV__) console.log("[DeepLink] Recovery mode flag cleared");
+};
 
 interface DeepLinkResult {
   success: boolean;
@@ -94,10 +110,9 @@ const getAuthType = (params: Record<string, string>): AuthDeepLinkType | undefin
 const navigateBasedOnAuthType = async (type: AuthDeepLinkType): Promise<void> => {
   switch (type) {
     case "recovery":
-      // Set recovery mode in AsyncStorage before navigating
-      // This ensures the app knows we're in recovery mode even after restart
-      await AsyncStorage.setItem(RECOVERY_MODE_KEY, "true");
-      if (__DEV__) console.log("[DeepLink] Recovery mode set, navigating to reset password screen");
+      // Recovery mode is already set before session creation/OTP verification
+      // Just navigate to reset password screen
+      if (__DEV__) console.log("[DeepLink] Navigating to reset password screen");
       router.replace("/(auth)/reset-password");
       break;
     case "signup":
@@ -163,8 +178,7 @@ export const handleAuthDeepLink = async (url: string): Promise<DeepLinkResult> =
   // If this is a recovery flow, set the flag BEFORE creating session
   // This ensures AuthContext knows about recovery mode when it loads
   if (authType === "recovery") {
-    await AsyncStorage.setItem(RECOVERY_MODE_KEY, "true");
-    if (__DEV__) console.log("[DeepLink] Recovery mode flag set before session creation");
+    await setRecoveryMode();
   }
 
   // If we don't have tokens, this might be a different type of deep link
@@ -185,7 +199,7 @@ export const handleAuthDeepLink = async (url: string): Promise<DeepLinkResult> =
   if (!sessionCreated) {
     // Clear recovery mode flag on error
     if (authType === "recovery") {
-      await AsyncStorage.removeItem(RECOVERY_MODE_KEY);
+      await clearRecoveryMode();
     }
     return { success: false, error: "Failed to create session" };
   }
@@ -215,8 +229,7 @@ const handleOtpVerification = async (
   // If this is a recovery flow, set the flag BEFORE verifying OTP
   // This ensures AuthContext knows about recovery mode when it loads
   if (type === "recovery") {
-    await AsyncStorage.setItem(RECOVERY_MODE_KEY, "true");
-    if (__DEV__) console.log("[DeepLink] Recovery mode flag set before OTP verification");
+    await setRecoveryMode();
   }
 
   try {
@@ -229,7 +242,7 @@ const handleOtpVerification = async (
       if (__DEV__) console.error("[DeepLink] OTP verification failed:", error.message);
       // Clear recovery mode flag on error
       if (type === "recovery") {
-        await AsyncStorage.removeItem(RECOVERY_MODE_KEY);
+        await clearRecoveryMode();
       }
       return { success: false, error: error.message };
     }
@@ -245,7 +258,7 @@ const handleOtpVerification = async (
     if (__DEV__) console.error("[DeepLink] Unexpected error during OTP verification:", error);
     // Clear recovery mode flag on error
     if (type === "recovery") {
-      await AsyncStorage.removeItem(RECOVERY_MODE_KEY);
+      await clearRecoveryMode();
     }
     return { success: false, error: "OTP verification failed" };
   }

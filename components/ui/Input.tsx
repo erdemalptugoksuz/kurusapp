@@ -1,16 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TouchableOpacity, type TextInputProps } from "react-native";
 import Animated, {
+  Easing,
   useAnimatedStyle,
   useSharedValue,
-  withTiming,
   withSequence,
-  Easing,
+  withTiming,
 } from "react-native-reanimated";
 import {
-  StyledText,
   StyledAnimatedView,
+  StyledText,
   StyledTextInput,
 } from "./StyledComponents";
 
@@ -20,6 +20,31 @@ interface InputProps extends TextInputProps {
   leftIcon?: keyof typeof Ionicons.glyphMap;
   isPassword?: boolean;
 }
+
+/**
+ * Color constants for Input component
+ * Note: These are inline styles because Uniwind/Tailwind doesn't support
+ * dynamic border colors with animated values. The colors match the Tailwind
+ * zinc palette for consistency with the rest of the app.
+ *
+ * - zinc-200: #e4e4e7 (default border)
+ * - zinc-500: #71717a (focused border, icon color)
+ * - zinc-900: #18181b (text color)
+ * - zinc-400: #a1a1aa (placeholder color)
+ * - zinc-50:  #fafafa (background)
+ * - red-500:  #ef4444 (error border)
+ */
+const INPUT_COLORS = {
+  border: {
+    default: "#e4e4e7",
+    focused: "#71717a",
+    error: "#ef4444",
+  },
+  background: "#fafafa",
+  text: "#18181b",
+  placeholder: "#a1a1aa",
+  icon: "#71717a",
+} as const;
 
 export function Input({
   label,
@@ -32,13 +57,14 @@ export function Input({
   const [isFocused, setIsFocused] = useState(false);
 
   // Animation values
-  const borderColor = useSharedValue(0);
   const shakeOffset = useSharedValue(0);
 
-  // Update border on focus
-  useEffect(() => {
-    borderColor.value = withTiming(isFocused ? 1 : 0, { duration: 150 });
-  }, [isFocused, borderColor]);
+  // Memoized border color based on error and focus state
+  const borderColor = useMemo(() => {
+    if (error) return INPUT_COLORS.border.error;
+    if (isFocused) return INPUT_COLORS.border.focused;
+    return INPUT_COLORS.border.default;
+  }, [error, isFocused]);
 
   // Shake on error
   useEffect(() => {
@@ -61,12 +87,6 @@ export function Input({
     setIsPasswordVisible(!isPasswordVisible);
   };
 
-  const getBorderColor = () => {
-    if (error) return "#ef4444";
-    if (isFocused) return "#71717a";
-    return "#e4e4e7";
-  };
-
   return (
     <StyledAnimatedView className="mb-4" style={containerAnimatedStyle}>
       {label && (
@@ -78,10 +98,10 @@ export function Input({
         style={{
           flexDirection: "row",
           alignItems: "center",
-          backgroundColor: "#fafafa",
+          backgroundColor: INPUT_COLORS.background,
           borderRadius: 12,
           borderWidth: 1,
-          borderColor: getBorderColor(),
+          borderColor: borderColor,
           paddingHorizontal: 16,
           height: 52,
         }}
@@ -90,21 +110,21 @@ export function Input({
           <Ionicons
             name={leftIcon}
             size={20}
-            color="#71717a"
+            color={INPUT_COLORS.icon}
             style={{ marginRight: 12 }}
           />
         )}
         <StyledTextInput
           style={{
             flex: 1,
-            color: "#18181b",
+            color: INPUT_COLORS.text,
             fontSize: 16,
             padding: 0,
             margin: 0,
             height: "100%",
             textAlignVertical: "center",
           }}
-          placeholderTextColor="#a1a1aa"
+          placeholderTextColor={INPUT_COLORS.placeholder}
           secureTextEntry={isPassword && !isPasswordVisible}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
@@ -115,7 +135,7 @@ export function Input({
             <Ionicons
               name={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
               size={20}
-              color="#71717a"
+              color={INPUT_COLORS.icon}
             />
           </TouchableOpacity>
         )}

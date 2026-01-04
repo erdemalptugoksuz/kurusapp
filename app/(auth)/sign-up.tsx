@@ -1,7 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from "react-native";
 import {
   FadeInDown,
   useAnimatedStyle,
@@ -11,12 +16,12 @@ import {
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import {
+  StyledAnimatedPressable,
+  StyledAnimatedView,
   StyledSafeAreaView,
-  StyledView,
   StyledText,
   StyledTouchableOpacity,
-  StyledAnimatedView,
-  StyledAnimatedPressable,
+  StyledView,
 } from "../../components/ui/StyledComponents";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSignUpValidation } from "../../hooks/useAuthValidation";
@@ -130,7 +135,7 @@ export default function SignUpScreen() {
             <StyledAnimatedView entering={FadeInDown.duration(300).delay(250)}>
               <Input
                 label="Şifre"
-                placeholder="En az 6 karakter"
+                placeholder="En az 8 karakter"
                 isPassword
                 autoCapitalize="none"
                 autoComplete="new-password"
@@ -167,7 +172,7 @@ export default function SignUpScreen() {
                   <StyledText className="text-zinc-900 font-medium">
                     Gizlilik Politikası
                   </StyledText>
-                  &apos;nı kabul ediyorum.
+                  {"'"}nı kabul ediyorum.
                 </StyledText>
               </StyledTouchableOpacity>
               {errors.terms && (
@@ -193,7 +198,9 @@ export default function SignUpScreen() {
               entering={FadeInDown.duration(300).delay(400)}
               className="flex-row justify-center items-center mt-auto pb-8"
             >
-              <StyledText className="text-zinc-500">Zaten hesabın var mı? </StyledText>
+              <StyledText className="text-zinc-500">
+                Zaten hesabın var mı?{" "}
+              </StyledText>
               <StyledTouchableOpacity
                 onPress={() => router.replace("/(auth)/sign-in")}
               >

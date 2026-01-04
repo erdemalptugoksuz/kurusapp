@@ -1,21 +1,21 @@
+import { router } from "expo-router";
 import { useRef, useState } from "react";
 import {
   Dimensions,
-  type NativeSyntheticEvent,
   type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  type ScrollView,
 } from "react-native";
-import { router } from "expo-router";
 import { FadeIn } from "react-native-reanimated";
-import {
-  StyledSafeAreaView,
-  StyledView,
-  StyledScrollView,
-  StyledAnimatedView,
-} from "../../components/ui/StyledComponents";
 import { OnboardingSlide } from "../../components/auth/OnboardingSlide";
-import { Button } from "../../components/ui/Button";
 import { AnimatedDot } from "../../components/ui/AnimatedDot";
-import type { ScrollView } from "react-native";
+import { Button } from "../../components/ui/Button";
+import {
+  StyledAnimatedView,
+  StyledSafeAreaView,
+  StyledScrollView,
+  StyledView,
+} from "../../components/ui/StyledComponents";
 
 const { width } = Dimensions.get("window");
 

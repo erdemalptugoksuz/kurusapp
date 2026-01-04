@@ -12,14 +12,12 @@ import {
   type ReactNode,
 } from "react";
 import { supabase } from "../lib/supabase";
+import { RECOVERY_MODE_KEY } from "../lib/constants";
 import type {
   AuthContextType,
   SignInCredentials,
   SignUpCredentials,
 } from "../types/auth";
-
-// Key for persisting recovery mode state
-const RECOVERY_MODE_KEY = "kurusapp_recovery_mode";
 
 // Generate redirect URI that works in both Expo Go and standalone builds
 // Expo Go uses exp:// scheme, standalone builds use custom scheme
@@ -96,11 +94,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(session?.user ?? null);
       setIsLoading(false);
 
-      // Mark initial load as complete after a short delay
-      // This prevents navigation conflicts with app/index.tsx
-      setTimeout(() => {
+      // Mark initial load as complete after state updates are flushed
+      // Using queueMicrotask ensures React state updates are processed first
+      queueMicrotask(() => {
         isInitialLoad.current = false;
-      }, 100);
+        if (__DEV__) console.log("[AuthContext] Initial load complete");
+      });
     };
 
     initializeAuth();
@@ -153,6 +152,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Clear recovery mode when signing out
     setIsRecoveryMode(false);
     await AsyncStorage.removeItem(RECOVERY_MODE_KEY);
+    // Using default scope (local) - clears session from device only
+    // This is intentional for better UX: allows user to stay signed in on other devices
+    // For complete logout from all devices, use { scope: "global" }
     await supabase.auth.signOut();
   };
 
